@@ -1,0 +1,169 @@
+<!-- Floating Toggle Button -->
+<button class="levi-toggle-btn" (click)="toggleChat()" aria-label="Toggle AI Assistant">
+  <div class="toggle-icon-container">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span class="pulse-ring"></span>
+  </div>
+  <span class="btn-label">Levi AI</span>
+</button>
+
+<!-- Chat Drawer Window -->
+<div class="levi-chat-drawer" [class.open]="isOpen()">
+  
+  <!-- Drawer Header -->
+  <div class="levi-drawer-header">
+    <div class="header-left">
+      @if (viewMode() === 'chat') {
+        <button class="icon-btn back-btn" (click)="backToList()" title="Back to conversations">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+      }
+      <div class="title-block">
+        <h3>Levi AI</h3>
+        <span class="status-indicator online">Assistant</span>
+      </div>
+    </div>
+    <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
+      @if (viewMode() === 'chat' && currentConversationId()) {
+        <button class="icon-btn delete-chat-btn" (click)="deleteConversation(currentConversationId()!, $event)" title="Delete conversation thread" style="color: var(--text-muted); transition: color 0.2s;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      }
+      <button class="icon-btn close-btn" (click)="toggleChat()" aria-label="Close Assistant">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Drawer Body -->
+  <div class="levi-drawer-body">
+    
+    <!-- View 1: Threads List -->
+    @if (viewMode() === 'list') {
+      <div class="threads-container">
+        <button class="new-chat-btn" (click)="startNewConversation()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Start New Conversation
+        </button>
+
+        <h4 class="section-title">Recent Chats</h4>
+        
+        @if (conversations().length === 0) {
+          <div class="empty-state">
+            <p>No previous conversations found.</p>
+            <p class="subtitle">Click above to start a new chat with Levi.</p>
+          </div>
+        } @else {
+          <div class="threads-list">
+            @for (conv of conversations(); track conv.id) {
+              <div class="thread-item" (click)="selectConversation(conv.id)">
+                <div class="thread-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <div class="thread-details">
+                  <span class="thread-title">{{ conv.title }}</span>
+                  <span class="thread-time">{{ conv.updatedAt | date:'mediumDate' }}</span>
+                </div>
+                <button class="thread-delete-btn" (click)="deleteConversation(conv.id, $event)" title="Delete thread">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- View 2: Active Chat Messages -->
+    @if (viewMode() === 'chat') {
+      <div class="chat-container">
+        
+        <div class="messages-list" #messageScrollContainer>
+          
+          @if (messages().length === 0) {
+            <div class="empty-chat-state">
+              <div class="levi-avatar-large">L</div>
+              <h4>Ask Levi Anything</h4>
+              <p>I can help you review your skills, check competency frameworks, examine certifications, list courses, and explain job mappings grounded in real Skillsphere data.</p>
+              <div class="suggested-queries">
+                <button class="query-chip" (click)="inputValue = 'What skills do I possess?'; sendMessage()">What skills do I possess?</button>
+                <button class="query-chip" (click)="inputValue = 'Check my certifications status.'; sendMessage()">Check my certifications status.</button>
+                <button class="query-chip" (click)="inputValue = 'List courses available to study.'; sendMessage()">List courses available to study.</button>
+              </div>
+            </div>
+          } @else {
+            @for (msg of messages(); track msg.messageId) {
+              @if (msg.role !== 'tool') {
+                <div class="message-bubble-wrapper" [class.user-wrapper]="msg.role === 'user'">
+                  @if (msg.role === 'assistant') {
+                    <div class="assistant-avatar">L</div>
+                  }
+                  <div class="message-bubble" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                    @if (msg.role === 'assistant') {
+                      <div class="bubble-text markdown-content" [innerHTML]="getSanitizedContent(msg.content)"></div>
+                    } @else {
+                      <p class="bubble-text">{{ msg.content }}</p>
+                    }
+                    <span class="bubble-time">{{ msg.createdAt | date:'shortTime' }}</span>
+                  </div>
+                </div>
+              }
+            }
+          }
+
+          @if (isLoading()) {
+            <div class="message-bubble-wrapper">
+              <div class="assistant-avatar">L</div>
+              <div class="message-bubble assistant loading-bubble">
+                <div class="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Chat Input Footer -->
+        <div class="chat-footer">
+          <input 
+            type="text" 
+            placeholder="Type a message..." 
+            [(ngModel)]="inputValue" 
+            (keydown.enter)="sendMessage()" 
+            [disabled]="isLoading()"
+            class="chat-input"
+          />
+          <button class="send-btn" (click)="sendMessage()" [disabled]="!inputValue.trim() || isLoading()" title="Send">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

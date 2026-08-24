@@ -1,0 +1,196 @@
+<div class="app-layout">
+  <app-sidebar />
+  
+  <div class="content-wrapper" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+    <app-header 
+      title="Levi AI Assistant Workspace" 
+      [role]="authService.role() || 'EMPLOYEE'" 
+      [email]="authService.email() || ''"
+      (logout)="authService.logout()"
+    />
+    
+    <main class="main-content" style="flex: 1; padding: 0; display: flex; overflow: hidden; background: transparent;">
+      
+      <div class="assistant-page-layout">
+        
+        <!-- Left Side: Conversation Threads Sidebar -->
+        <aside class="chat-sidebar" [class.hidden]="!showSidebar()">
+          <div class="sidebar-header">
+            <button class="new-chat-btn" (click)="startNewConversation()" title="Start a new chat thread">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              New Chat
+            </button>
+          </div>
+
+          <div class="sidebar-body">
+            <h4 class="section-title">Recent Conversations</h4>
+            
+            @if (conversations().length === 0) {
+              <div class="empty-conversations">
+                <p>No conversations yet.</p>
+                <span class="subtitle">Start a chat to get personalized career and learning advice.</span>
+              </div>
+            } @else {
+              <div class="conversations-list">
+                @for (conv of conversations(); track conv.id) {
+                  <div class="conversation-item" 
+                       [class.active]="currentConversationId() === conv.id"
+                       (click)="selectConversation(conv.id)">
+                    <div class="item-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                    </div>
+                    <div class="item-info">
+                      <span class="item-title">{{ conv.title || 'Untitled Chat' }}</span>
+                      <span class="item-date">{{ conv.updatedAt | date:'shortDate' }}</span>
+                    </div>
+                    <button class="item-delete-btn" (click)="deleteConversation(conv.id, $event)" title="Delete thread">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </aside>
+
+        <!-- Right Side: Active Conversation Area -->
+        <main class="chat-workspace">
+          
+          <!-- Workspace Header -->
+          <header class="workspace-header">
+            <div class="header-left">
+              <button class="toggle-sidebar-btn" (click)="toggleSidebar()" title="Toggle Sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+              <div class="current-topic">
+                <h2>Levi AI Assistant Workspace</h2>
+                <span class="online-dot"></span>
+                <span class="status-text">Online</span>
+              </div>
+            </div>
+            
+            <div class="header-right">
+              @if (currentConversationId()) {
+                <button class="clear-chat-btn" (click)="deleteConversation(currentConversationId()!)" title="Clear/Delete conversation history">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  Clear Conversation
+                </button>
+              }
+            </div>
+          </header>
+
+          <!-- Chat Messages Scroll Container -->
+          <div class="workspace-messages" #messageScrollContainer>
+            
+            @if (messages().length === 0) {
+              <div class="welcome-container">
+                <div class="welcome-brand">L</div>
+                <h1>Welcome to Levi AI Workspace</h1>
+                <p class="subtitle">Ask any question to inspect your career trajectory, discover skills development paths, evaluate certification readiness, or list matching internal job options.</p>
+                
+                <div class="suggested-grid">
+                  <div class="suggestion-card" (click)="inputValue = 'What skills do I possess?'; sendMessage()">
+                    <div class="card-icon">⚡</div>
+                    <h4>Skills Profile</h4>
+                    <p>Analyze your current skill inventory and levels from the Nexus DB.</p>
+                  </div>
+                  
+                  <div class="suggestion-card" (click)="inputValue = 'Show my certification compliance status.'; sendMessage()">
+                    <div class="card-icon">🎓</div>
+                    <h4>Compliance & Certs</h4>
+                    <p>Check if you have any pending compliance gaps or certified skills.</p>
+                  </div>
+
+                  <div class="suggestion-card" (click)="inputValue = 'Where should I focus to get promoted to Senior Software Engineer?'; sendMessage()">
+                    <div class="card-icon">📈</div>
+                    <h4>Career Growth</h4>
+                    <p>Get actionable, data-driven recommendations on role promotion paths.</p>
+                  </div>
+
+                  <div class="suggestion-card" (click)="inputValue = 'Find open internal job postings that match my skills.'; sendMessage()">
+                    <div class="card-icon">💼</div>
+                    <h4>Job Postings</h4>
+                    <p>Look up internal open roles matching your skillset.</p>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <div class="messages-stack">
+                @for (msg of messages(); track msg.messageId) {
+                  @if (msg.role !== 'tool') {
+                    <div class="message-row" [class.user-row]="msg.role === 'user'">
+                      <div class="message-wrapper">
+                        <div class="avatar" [class.user]="msg.role === 'user'">
+                          {{ msg.role === 'user' ? 'U' : 'L' }}
+                        </div>
+                        <div class="bubble" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+                          @if (msg.role === 'assistant') {
+                            <div class="bubble-text markdown-wrapper" [innerHTML]="getSanitizedContent(msg.content)"></div>
+                          } @else {
+                            <p class="bubble-text">{{ msg.content }}</p>
+                          }
+                          <span class="timestamp">{{ msg.createdAt | date:'shortTime' }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+                
+                @if (isLoading()) {
+                  <div class="message-row">
+                    <div class="message-wrapper">
+                      <div class="avatar">L</div>
+                      <div class="bubble assistant loading-state">
+                        <div class="typing-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Message Input Bar -->
+          <footer class="workspace-footer">
+            <form class="input-form" (submit)="sendMessage(); $event.preventDefault()">
+              <input class="chat-text-input" 
+                     type="text" 
+                     name="userQuery"
+                     [(ngModel)]="inputValue"
+                     placeholder="Ask Levi about your career, skills gaps, or certifications..." 
+                     [disabled]="isLoading()"
+                     autocomplete="off" />
+              <button class="send-message-btn" type="submit" [disabled]="!inputValue.trim() || isLoading()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </form>
+          </footer>
+
+        </main>
+      </div>
+
+    </main>
+  </div>
+</div>

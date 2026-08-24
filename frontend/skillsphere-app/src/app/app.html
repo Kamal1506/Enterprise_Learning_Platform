@@ -1,0 +1,10 @@
+<div class="animated-wave-bg"></div>
+<div class="bg-glow-orb bg-glow-orb-1"></div>
+<div class="bg-glow-orb bg-glow-orb-2"></div>
+<router-outlet />
+<app-notification-container />
+<app-confirmation-modal />
+
+@if (authService.isLoggedIn()) {
+  <app-assistant-chat />
+}
