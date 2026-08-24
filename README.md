@@ -1,285 +1,179 @@
-# Enterprise Learning Platform with Skill and Career Guidance System 🌌
+# ◈ SkillSphere Nexus — Enterprise Learning, Certification & Career Guidance Platform
 
-Enterprise Learning Platform with Skill and Career Guidance System is an enterprise-grade Employee Learning, Certification & Career Development platform. It is structured as a monorepo containing 4 independent Spring Boot microservices and a single Angular 20 frontend dashboard.
+**SkillSphere Nexus** is a unified, high-performance corporate growth network designed to align individual career development with organizational needs. Instead of disjointed tools for tracking training, external credentials, and promotions, it unifies them into a robust microservice architecture. 
 
-The services share a single PostgreSQL database instance (with isolated schemas per service) and utilize a custom, stateless JWT-based authentication mechanism.
+A central highlight is **Levi**, an agentic, secure **Conversational AI Assistant** powered by the **Groq LLM** that acts as an intelligent career guide by analyzing skill gaps, pointing out relevant training courses, and matching employees to internal job listings.
 
 ---
 
 ## 📖 Table of Contents
-
-1. [System Architecture](#-system-architecture)
-2. [Technology Stack](#-technology-stack)
-3. [Repository Structure](#-repository-structure)
-4. [Microservices Breakdown](#-microservices-breakdown)
-5. [Authentication & Security Design](#-authentication--security-design)
-6. [Database & Data Conventions](#-database--data-conventions)
-7. [Getting Started & Local Setup](#-getting-started--local-setup)
-   - [Prerequisites](#prerequisites)
-   - [Environment Variables](#environment-variables)
-   - [Running Backend Services](#running-backend-services)
-   - [Running Frontend Application](#running-frontend-application)
-8. [Testing Guide](#-testing-guide)
-9. [API & Frontend Conventions](#-api--frontend-conventions)
+* [1. The Solution & Business Case](#1-the-solution--business-case)
+* [2. System Architecture](#2-system-architecture)
+* [3. Technology Stack](#3-technology-stack)
+* [4. Microservices Design & Decoupled Schema Model](#4-microservices-design--decoupled-schema-model)
+* [5. Stateless Custom Authentication (JWT)](#5-stateless-custom-authentication-jwt)
+* [6. Agentic AI Career Assistant (Levi)](#6-agentic-ai-career-assistant-levi)
+* [7. Repository Structure](#7-repository-structure)
+* [8. Development Setup & Launch Instructions](#8-development-setup--launch-instructions)
 
 ---
 
-## 🏗 System Architecture
+## 1. The Solution & Business Case
+
+In modern enterprise environments, talent retention suffers due to a lack of clear career visibility:
+1. Employees don't know what skills they lack to earn a promotion.
+2. Certifications expire without warning, leaving teams non-compliant.
+3. Internal job postings are invisible or disconnected from training resources.
+
+**SkillSphere Nexus** bridges this gap. It catalogs talent, drives upskilling through sequential learning paths, tracks certification compliance, exposes a transparent internal job marketplace, and overlays an AI assistant to guide employees at every step.
+
+---
+
+## 2. System Architecture
+
+The ecosystem consists of an Angular standalone frontend communicating with five autonomous Spring Boot microservices. Each service owns its database schema under a single PostgreSQL instance:
 
 ```mermaid
 graph TD
     subgraph Frontend [Client Layer]
-        Angular[Angular 20 Dashboard App]
+        Angular[Angular 20 Standalone App]
     end
 
-    subgraph Security [Security & Gateway]
-        JWT[Custom JWT Validation / HS256]
+    subgraph Security [Security Gate]
+        JWT[Custom Stateless JWT HS256]
     end
 
-    subgraph Services [Microservices Layer - Spring Boot]
+    subgraph Microservices [Spring Boot Services]
         Skill[Skill Service :8081]
         Learning[Learning Service :8082]
-        Cert[Certification Service :8083]
+        Cert[Cert Service :8083]
         Career[Career Service :8084]
+        Assist[Assistant Service :8085]
     end
 
-    subgraph Database [Storage Layer - PostgreSQL]
-        DB[(skillsphere_nexus DB)]
+    subgraph Storage [PostgreSQL 16 Instance]
         Schema1[(schema: skill_service)]
         Schema2[(schema: learning_service)]
         Schema3[(schema: cert_service)]
         Schema4[(schema: career_service)]
+        Schema5[(schema: assistant_service)]
     end
 
-    Angular -->|REST APIs with JWT| Security
-    Security --> Skill
-    Security --> Learning
-    Security --> Cert
-    Security --> Career
-
+    Angular -->|REST Requests + JWT Header| JWT
+    JWT --> Skill & Learning & Cert & Career & Assist
     Skill --> Schema1
     Learning --> Schema2
     Cert --> Schema3
     Career --> Schema4
-
-    Schema1 --- DB
-    Schema2 --- DB
-    Schema3 --- DB
-    Schema4 --- DB
-
-    Learning -.->|RestClient lookup + JWT propagation| Skill
-    Career -.->|RestClient lookup + JWT propagation| Skill
+    Assist --> Schema5
+    
+    Learning -.->|RestClient + JWT Forwarding| Skill
+    Career -.->|RestClient + JWT Forwarding| Skill
+    Assist -.->|RestClient + JWT Forwarding| Skill & Learning & Cert & Career
 ```
 
 ---
 
-## 🛠 Technology Stack
+## 3. Technology Stack
 
-| Layer | Technology | Version / Implementation |
-| :--- | :--- | :--- |
-| **Frontend** | Angular 20 | Standalone Components, TypeScript, Signals, Angular Material |
-| **Backend** | Java | 21 (LTS) |
-| **Framework** | Spring Boot | 3.x |
-| **Database** | PostgreSQL | 16 |
-| **Database Migrations** | Flyway | Integrates per microservice |
-| **Authentication** | Stateless JWT | Custom HS256 sign & verify (no Keycloak/OAuth2 server) |
-| **Build Tools** | Maven & npm | Maven for backend services, npm/Angular CLI for frontend |
-| **Testing (Backend)** | JUnit 5 & Mockito | Unit & integration tests |
-| **Testing (Frontend)** | Jasmine & Karma | Unit & component tests |
+* **Frontend**: **Angular 20** (Standalone Components, Signals state management, Router, SCSS, Material Design, Dark UI dashboard).
+* **Backend**: **Java 21 (LTS)** and **Spring Boot 3.x** (MVC, Security, RestClient).
+* **Database**: **PostgreSQL 16** (Schema-per-service database model).
+* **Database Migrations**: **Flyway** (Each service hosts its separate migration folders under `src/main/resources/db/migration`).
+* **AI Engine**: **Groq API** (Llama3 model) with OpenAI-compatible tool/function call definitions.
 
 ---
 
-## 📂 Repository Structure
+## 4. Microservices Design & Decoupled Schema Model
 
-The monorepo is organized as follows:
+To guarantee service autonomy, **zero cross-schema foreign keys** are allowed at the database level. Services refer to entities across boundaries purely through logical UUID columns (e.g., `employee_id`).
 
-```text
+### 1. Skill Service (Port `8081` | Schema `skill_service`)
+* **Role**: Inventory of Talent.
+* **Core Responsibilities**: User registrations, BCrypt hashing, JWT generation, employee profile registry, skill self-assessments, and competency framework metrics.
+
+### 2. Learning Service (Port `8082` | Schema `learning_service`)
+* **Role**: Upskilling Engine.
+* **Core Responsibilities**: Course catalogs, modular syllabus management, sequential learning paths (e.g. "Full Stack Developer Path"), and course enrollment/completion logs.
+
+### 3. Certification Service (Port `8083` | Schema `cert_service`)
+* **Role**: Compliance & Audit.
+* **Core Responsibilities**: External credentials catalog (AWS, Scrum, etc.), expiry alerts, corporate compliance calculation, and course certificate request approvals.
+
+### 4. Career Service (Port `8084` | Schema `career_service`)
+* **Role**: Growth Navigator.
+* **Core Responsibilities**: Professional mentorship assignments, timeline goals, standard organizational roadmaps, and an internal job posting board featuring real-time **Skill-Match Percentage calculations**.
+
+### 5. Assistant Service (Port `8085` | Schema `assistant_service`)
+* **Role**: Agentic LLM Orchestrator.
+* **Core Responsibilities**: Managing LLM conversation histories, system prompts, tool executions, and audit logging.
+
+---
+
+## 5. Stateless Custom Authentication (JWT)
+
+We avoid complex Keycloak overhead in favor of a clean, decentralized stateless JWT mechanism:
+1. On login, the **Skill Service** verifies credentials and signs a JWT containing `sub` (user ID), `email`, `role`, and `exp`.
+2. The signature is encrypted using an HS256 shared secret (`JWT_SECRET`).
+3. Every other microservice runs the identical `JwtAuthFilter` inside its Spring Security chain, verifying incoming `Authorization: Bearer <token>` headers locally using the same secret.
+
+---
+
+## 6. Agentic AI Career Assistant (Levi)
+
+**Levi** is a conversational AI companion designed to act as an assistant career planner:
+
+1. **Groq Function Calling Loop**: When a user queries Levi, the LLM determines whether it needs database information and requests tool executions (e.g. `get_employee_skills`).
+2. **16 Functional Tools**: Exposes endpoints from all four core microservices covering profiles, enrollments, credentials, career plans, and compliance data.
+3. **JWT Identity Propagation**: Levi forwards the active caller's JWT token to downstream APIs, automatically enforcing API level role-based access.
+4. **Prompt Injection & Parameter Hijack Protection**: In `AssistantService.java`, if the LLM requests data with an explicit `employeeId`, the Java code overrides it with the caller's actual UUID extracted from the JWT unless the user is an `ADMIN` or `HR_MANAGER`.
+5. **Auditing**: Every tool call is logged in the `tool_audit_logs` table for compliance and model evaluation.
+
+---
+
+## 7. Repository Structure
+
+```
 skillsphere-nexus/
-├── AGENTS.md                 # Agent instructions and system specifications
-├── README.md                 # Project main documentation (this file)
+├── README.md
+├── run.bat                     (Dev environment runner launcher script)
+├── run.ps1                     (PowerShell execution engine script)
 ├── services/
-│   ├── skill-service/        # Spring Boot, port 8081 (Auth, Skills, Employees)
-│   ├── learning-service/     # Spring Boot, port 8082 (Courses, Learning Paths)
-│   ├── certification-service/# Spring Boot, port 8083 (Certifications, Renewals) - Planned
-│   └── career-service/       # Spring Boot, port 8084 (Career Plans, Promotions) - Planned
+│   ├── skill-service/          (Port 8081)
+│   ├── learning-service/       (Port 8082)
+│   ├── certification-service/  (Port 8083)
+│   ├── career-service/         (Port 8084)
+│   └── assistant-service/      (Port 8085)
 └── frontend/
-    └── skillsphere-app/      # Single Angular 20 dashboard app (modular features)
-```
-
-Each Spring Boot service follows standard Clean/Layered Architecture packaging:
-```text
-com.skillsphere.<service>/
-├── controller/     # REST Endpoints
-├── service/        # Business Logic & Core Interfaces
-├── repository/     # JPA Spring Data Repositories
-├── entity/         # Database Entities
-├── dto/            # Request/Response Data Transfer Objects (using records)
-├── mapper/         # Object Mappers (Entity <-> DTO)
-├── exception/      # Custom Exceptions & Global Exception Handlers
-├── security/       # JWT Filters & Web Security Configuration
-└── config/         # App-specific beans & configuration classes
+    └── skillsphere-app/        (Angular 20 app, Port 4200)
 ```
 
 ---
 
-## ⚙️ Microservices Breakdown
-
-1. **Skill Service (Port `8081`)**
-   * *Core Scope*: Employee profiles, skills registry, competency levels, assessments.
-   * *Auth Authority*: Exposes the user registration (`/api/v1/auth/register`) and login (`/api/v1/auth/login`) endpoints. Generates and signs JWT tokens.
-2. **Learning Service (Port `8082`)**
-   * *Core Scope*: Course listings, learning paths, enrollments, completion tracking.
-   * *Integration*: Outbound `RestClient` verification of employee IDs against Skill Service (propagating user JWT).
-3. **Certification Service (Port `8083`)** *(Upcoming)*
-   * *Core Scope*: Certifications tracking, expiry indicators, renewals management.
-4. **Career Service (Port `8084`)** *(Upcoming)*
-   * *Core Scope*: Career path logs, progression planning, internal job postings, talent analytics.
-
----
-
-## 🔐 Authentication & Security Design
-
-The security model of Enterprise Learning Platform with Skill and Career Guidance System is custom, stateless, and decentralized:
-
-* **JWT Issuer**: The **Skill Service** authenticates credentials and signs a JWT (HS256) with claims:
-  ```json
-  {
-    "sub": "user-uuid",
-    "email": "employee@skillsphere.com",
-    "role": "EMPLOYEE",
-    "exp": 1719876543
-  }
-  ```
-* **Stateless Validation**: All microservices possess the same `JwtAuthFilter` and read a shared environment variable **`JWT_SECRET`**. Any microservice can independently validate the signature, claims, and expiration of incoming request tokens without calling the Skill Service.
-* **Role-Based Access Control (RBAC)**: Supported roles are:
-  - `ADMIN`
-  - `HR_MANAGER`
-  - `TRAINING_MANAGER`
-  - `EMPLOYEE`
-* **Frontend Authentication**: The Angular application receives the JWT on successful login and stores it in session storage. An Angular `HttpInterceptor` automatically attaches the token to all outgoing API calls in the `Authorization: Bearer <token>` header.
-
----
-
-## 🗄 Database & Data Conventions
-
-* **Database isolation**: A single PostgreSQL instance is shared, but each microservice is isolated to its own schema (e.g. `skill_service`, `learning_service`).
-* **Migrations**: Database schema definitions and additions are versioned and run at startup via **Flyway** migrations located under `src/main/resources/db/migration/` in each service.
-* **Service Boundaries**: There are **no foreign key constraints** at the database level across schemas. Connections between entities across microservices are maintained through logical UUID columns (e.g. `employee_id` stored inside the `learning_service.enrollments` table).
-* **Audit Fields**: Every table must include `created_at` and `updated_at` timestamp columns.
-* **Formatting**: Tables and columns are named using `snake_case` (e.g. `learning_paths`, `enrollment_status`).
-
----
-
-## 🚀 Getting Started & Local Setup
+## 8. Development Setup & Launch Instructions
 
 ### Prerequisites
+* Java Development Kit (JDK 17 or 21)
+* Node.js (v18 or v20)
+* PostgreSQL 16 (running on Port 5432)
 
-- **Java**: JDK 21
-- **Node.js**: v22+
-- **Angular CLI**: v20+
-- **Database**: PostgreSQL 16+
-- **Build Tool**: Apache Maven 3.9+
+### 1. Database Setup
+Create the root database in your PostgreSQL instance:
+```sql
+CREATE DATABASE skillsphere_nexus;
+```
+*(The Flyway migration script in each microservice will automatically initialize schemas, tables, and seed mock data on first startup).*
 
-### Environment Variables
-
-Each microservice relies on the following environment variables. Ensure they are configured in your shell environment:
-
-```bash
-# Shared secret for signing & verifying JWT tokens (must be identical across all services)
-JWT_SECRET="9a6747f5e5b74c2e8b2b7b5c6e8f0a2d3c4b5a6d7e8f901234567890abcdef12"
-
-# Database Connection Details
-SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/skillsphere_nexus"
-SPRING_DATASOURCE_USERNAME="postgres"
-SPRING_DATASOURCE_PASSWORD="your_postgres_password"
-
-# Skill Service Location (required by downstream services)
-SKILL_SERVICE_URL="http://localhost:8081/api/v1"
+### 2. Environment Variables Configuration
+Create a `.env` file in the root directory:
+```properties
+JWT_SECRET=your_32_character_super_secure_jwt_shared_secret
+GROQ_API_KEY=your_groq_api_llm_key
 ```
 
-### Running Backend Services
-
-1. Ensure PostgreSQL is running and create the base database:
-   ```sql
-   CREATE DATABASE skillsphere_nexus;
-   ```
-2. Navigate to a service directory (e.g., `services/skill-service`):
-   ```bash
-   cd services/skill-service
-   ```
-3. Run the migrations and start the application:
-   ```bash
-   # Build/package
-   mvn clean package
-
-   # Run application
-   mvn spring-boot:run
-   ```
-4. Repeat the steps for `services/learning-service` and any other active services.
-
-### Running Frontend Application
-
-1. Navigate to the frontend workspace:
-   ```bash
-   cd frontend/skillsphere-app
-   ```
-2. Install npm dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Angular dev server:
-   ```bash
-   ng serve
-   ```
-4. Open your browser and navigate to `http://localhost:4200/`.
-
----
-
-## 🧪 Testing Guide
-
-We maintain strict test coverage on both the frontend and backend. Tests should run and pass successfully before commits are pushed to the main repository.
-
-### Backend (Spring Boot Tests)
-To run backend unit and integration tests (JUnit 5 + Mockito):
-```bash
-cd services/<service-name>
-mvn test
+### 3. Launching the Services
+We provide a simple, unified Windows script to run your complete developer workspace:
+```cmd
+.\run.bat
 ```
-
-### Frontend (Angular Tests)
-To run unit and component tests (Karma + Jasmine runner):
-```bash
-cd frontend/skillsphere-app
-ng test
-```
-
----
-
-## 📝 API & Frontend Conventions
-
-### API Guidelines
-* **Base Path**: All endpoints are prefixed with `/api/v1/`.
-* **Content Type**: Requests and responses exchange JSON data.
-* **Pagination**: List endpoints support query parameters `?page=n&size=m` (0-indexed page number). Response wrapper structure:
-  ```json
-  {
-    "content": [...],
-    "totalElements": 150,
-    "totalPages": 8
-  }
-  ```
-* **Exception Handlers**: Standardized error response body returned by the controller advice:
-  ```json
-  {
-    "timestamp": "2026-07-21T18:00:00Z",
-    "status": 404,
-    "error": "Not Found",
-    "message": "Employee with UUID <id> not found.",
-    "path": "/api/v1/employees/<id>"
-  }
-  ```
-
-### Angular Guidelines
-* **Module-less State**: Built exclusively using Angular standalone components (no NgModules).
-* **State Management**: Local state management via Angular **Signals** instead of RxJS state stores when possible.
-* **API Requests**: Standardized communication via Angular `HttpClient` and features are organized into standalone feature folders (`skills/`, `learning/`, etc.) matching their microservice counterpart.
+This opens options to spin up individual services or choose `[0] Run All Services + Frontend` to automatically boot the entire ecosystem in separate PowerShell windows.
