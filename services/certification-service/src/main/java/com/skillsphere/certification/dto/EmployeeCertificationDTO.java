@@ -1,0 +1,45 @@
+package com.skillsphere.certification.dto;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+
+public record EmployeeCertificationDTO(
+    UUID id,
+    UUID employeeId,
+    String employeeName,
+    String employeeDepartment,
+    UUID certificationId,
+    String certificationName,
+    String provider,
+    String credentialId,
+    LocalDate issueDate,
+    LocalDate expiryDate,
+    String status,
+    String documentUrl,
+    Boolean verified,
+    Instant verifiedAt,
+    String renewalStatus,
+    LocalDate renewalDate,
+    String notes,
+    Instant createdAt,
+    Instant updatedAt,
+    LocalDate renewalRequestedDate,
+    String renewalRequestedBy,
+    LocalDate renewalCompletedDate,
+    LocalDate newExpiryDate,
+    String renewalNotes,
+    String certificateType,
+    UUID courseId,
+    UUID courseCompletionId,
+    String requestStatus,
+    String approvedBy,
+    LocalDate approvedDate,
+    String certificateNumber,
+    String pdfLocation,
+    Integer assessmentScore,
+    Integer completionPercentage,
+    String instructor,
+    Instant completionDate,
+    LocalDate requestDate
+) {}
