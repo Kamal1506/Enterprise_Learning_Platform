@@ -97,12 +97,14 @@ export interface CertificationAudit {
   source?: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class CertificationsService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8083/api/v1';
+  private readonly baseUrl = environment.certServiceUrl;
 
   // --- Certification Definitions ---
   getCertifications(): Observable<Certification[]> {

@@ -26,7 +26,7 @@ public class CourseCertificate {
     private String courseNameSnapshot;
 
     @Column(name = "issue_date", nullable = false)
-    private LocalDate issueDate;
+    private LocalDate issueDate = LocalDate.now();
 
     @Column(name = "completion_date", nullable = false)
     private Instant completionDate = Instant.now();

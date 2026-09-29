@@ -62,12 +62,14 @@ export interface SkillGap {
   gap: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class EmployeeService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8081/api/v1';
+  private readonly baseUrl = environment.skillServiceUrl;
 
   getEmployees(
     department?: string,

@@ -94,9 +94,11 @@ export interface PendingApprovalDTO {
   createdAt: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class SkillApiService {
-  private readonly BASE = 'http://localhost:8081/api/v1';
+  private readonly BASE = environment.skillServiceUrl;
 
   constructor(private http: HttpClient) {}
 

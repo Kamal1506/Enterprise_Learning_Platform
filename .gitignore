@@ -1,0 +1,48 @@
+# ==========================
+# Java / Maven build output
+# ==========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+
+# Maven wrapper (optional: keep mvnw files but exclude downloaded wrapper jar)
+.mvn/wrapper/maven-wrapper.jar
+
+# ==========================
+# Spring Boot specific
+# ==========================
+*.log
+spring.log
+
+# ==========================
+# Node / Angular
+# ==========================
+frontend/skillsphere-app/node_modules/
+frontend/skillsphere-app/dist/
+frontend/skillsphere-app/.angular/
+
+# ==========================
+# IDE / OS
+# ==========================
+.idea/
+*.iml
+.vscode/
+*.DS_Store
+Thumbs.db
+.classpath
+.project
+.settings/
+
+# ==========================
+# Environment / Secrets
+# ==========================
+.env
+*.env.local
+application-local.properties
+application-local.yml

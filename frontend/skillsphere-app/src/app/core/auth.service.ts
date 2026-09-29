@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
+import { environment } from '../../environments/environment';
+
 export interface LoginResponse {
   token: string;
   expiresAt: string;
@@ -18,7 +20,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   
-  private readonly apiUrl = 'http://localhost:8081/api/v1/auth';
+  private readonly apiUrl = `${environment.skillServiceUrl}/auth`;
 
   // Signals for state
   readonly token = signal<string | null>(sessionStorage.getItem('token'));

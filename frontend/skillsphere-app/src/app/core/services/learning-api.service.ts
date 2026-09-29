@@ -63,9 +63,11 @@ export interface CompleteEnrollmentRequest {
   score?: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class LearningApiService {
-  private readonly BASE = 'http://localhost:8082/api/v1';
+  private readonly BASE = environment.learningServiceUrl;
 
   constructor(private http: HttpClient) {}
 

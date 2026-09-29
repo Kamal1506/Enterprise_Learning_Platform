@@ -1,0 +1,129 @@
+services:
+  # 1. Skill Service
+  - type: web
+    name: skillsphere-skill-service
+    runtime: docker
+    rootDir: services/skill-service
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+
+  # 2. Learning Service
+  - type: web
+    name: skillsphere-learning-service
+    runtime: docker
+    rootDir: services/learning-service
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SKILL_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-skill-service
+          property: host
+        value: "https://${skillsphere-skill-service.host}/api/v1"
+
+  # 3. Certification Service
+  - type: web
+    name: skillsphere-cert-service
+    runtime: docker
+    rootDir: services/certification-service
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SKILL_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-skill-service
+          property: host
+        value: "https://${skillsphere-skill-service.host}/api/v1"
+
+  # 4. Career Service
+  - type: web
+    name: skillsphere-career-service
+    runtime: docker
+    rootDir: services/career-service
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SKILL_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-skill-service
+          property: host
+        value: "https://${skillsphere-skill-service.host}/api/v1"
+      - key: LEARNING_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-learning-service
+          property: host
+        value: "https://${skillsphere-learning-service.host}/api/v1"
+      - key: CERTIFICATION_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-cert-service
+          property: host
+        value: "https://${skillsphere-cert-service.host}/api/v1"
+
+  # 5. Assistant Service
+  - type: web
+    name: skillsphere-assistant-service
+    runtime: docker
+    rootDir: services/assistant-service
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SKILL_SERVICE_URL
+        fromService:
+          type: web
+          name: skillsphere-skill-service
+          property: host
+        value: "https://${skillsphere-skill-service.host}/api/v1"
+
+  # 6. Angular Frontend (Static Site)
+  - type: static
+    name: skillsphere-frontend
+    rootDir: frontend/skillsphere-app
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/skillsphere-app/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

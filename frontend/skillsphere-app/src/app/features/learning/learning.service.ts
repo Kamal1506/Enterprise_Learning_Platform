@@ -68,12 +68,14 @@ export interface CourseStats {
   overallCompletionRate: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class LearningService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8082/api/v1';
+  private readonly baseUrl = environment.learningServiceUrl;
 
   // --- Courses ---
   getCourses(category?: string, search?: string, page = 0, size = 20, type?: string): Observable<PaginatedResponse<Course>> {
@@ -203,7 +205,7 @@ export class LearningService {
 
   // --- Employee Details fallback ---
   getEmployeeDetails(employeeId: string): Observable<any> {
-    return this.http.get<any>(`http://localhost:8081/api/v1/employees/${employeeId}`);
+    return this.http.get<any>(`${environment.skillServiceUrl}/employees/${employeeId}`);
   }
 
   // --- Quiz and Assessment ---

@@ -18,12 +18,14 @@ export interface ConversationDto {
   updatedAt: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AssistantService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8085/api/v1/assistant';
+  private readonly apiUrl = `${environment.assistantServiceUrl}/assistant`;
 
   chat(message: string, conversationId?: string): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(`${this.apiUrl}/chat`, { message, conversationId });

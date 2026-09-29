@@ -113,12 +113,14 @@ export interface RoadmapTemplate {
   steps: string[];
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class CareerService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8084/api/v1';
+  private readonly baseUrl = environment.careerServiceUrl;
 
   // --- Career Plans ---
   getPlanByEmployee(employeeId: string): Observable<CareerPlanDetail> {

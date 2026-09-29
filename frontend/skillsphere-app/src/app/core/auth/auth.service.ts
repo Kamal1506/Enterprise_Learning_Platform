@@ -12,13 +12,15 @@ export interface AuthUser {
   exp: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 export interface AuthResponse {
   token: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly SKILL_API = 'http://localhost:8081/api/v1';
+  private readonly SKILL_API = environment.skillServiceUrl;
   private readonly TOKEN_KEY = 'ss_token';
 
   private _token = signal<string | null>(sessionStorage.getItem(this.TOKEN_KEY));
