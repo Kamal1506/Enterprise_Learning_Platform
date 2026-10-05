@@ -1,3 +1,25 @@
+envVarGroups:
+  - name: skillsphere-env
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SKILL_SERVICE_URL
+        value: "https://skillsphere-skill-service.onrender.com/api/v1"
+      - key: LEARNING_SERVICE_URL
+        value: "https://skillsphere-learning-service.onrender.com/api/v1"
+      - key: CERTIFICATION_SERVICE_URL
+        value: "https://skillsphere-cert-service.onrender.com/api/v1"
+      - key: CAREER_SERVICE_URL
+        value: "https://skillsphere-career-service.onrender.com/api/v1"
+
 services:
   # 1. Skill Service
   - type: web
