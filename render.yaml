@@ -31,11 +31,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: SKILL_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-skill-service
-          property: host
-        value: "https://${skillsphere-skill-service.host}/api/v1"
+        value: "https://skillsphere-skill-service.onrender.com/api/v1"
 
   # 3. Certification Service
   - type: web
@@ -53,11 +49,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: SKILL_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-skill-service
-          property: host
-        value: "https://${skillsphere-skill-service.host}/api/v1"
+        value: "https://skillsphere-skill-service.onrender.com/api/v1"
 
   # 4. Career Service
   - type: web
@@ -75,23 +67,11 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: SKILL_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-skill-service
-          property: host
-        value: "https://${skillsphere-skill-service.host}/api/v1"
+        value: "https://skillsphere-skill-service.onrender.com/api/v1"
       - key: LEARNING_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-learning-service
-          property: host
-        value: "https://${skillsphere-learning-service.host}/api/v1"
+        value: "https://skillsphere-learning-service.onrender.com/api/v1"
       - key: CERTIFICATION_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-cert-service
-          property: host
-        value: "https://${skillsphere-cert-service.host}/api/v1"
+        value: "https://skillsphere-cert-service.onrender.com/api/v1"
 
   # 5. Assistant Service
   - type: web
@@ -111,8 +91,4 @@ services:
       - key: GROQ_API_KEY
         sync: false
       - key: SKILL_SERVICE_URL
-        fromService:
-          type: web
-          name: skillsphere-skill-service
-          property: host
-        value: "https://${skillsphere-skill-service.host}/api/v1"
+        value: "https://skillsphere-skill-service.onrender.com/api/v1"
