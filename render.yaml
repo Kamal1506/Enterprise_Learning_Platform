@@ -116,14 +116,3 @@ services:
           name: skillsphere-skill-service
           property: host
         value: "https://${skillsphere-skill-service.host}/api/v1"
-
-  # 6. Angular Frontend (Static Site)
-  - type: static
-    name: skillsphere-frontend
-    rootDir: frontend/skillsphere-app
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist/skillsphere-app/browser
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
