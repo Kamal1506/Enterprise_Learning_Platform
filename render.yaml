@@ -6,14 +6,7 @@ services:
     rootDir: services/skill-service
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
+      - fromGroup: skillsphere-env
 
   # 2. Learning Service
   - type: web
@@ -22,16 +15,7 @@ services:
     rootDir: services/learning-service
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: SKILL_SERVICE_URL
-        value: "https://skillsphere-skill-service.onrender.com/api/v1"
+      - fromGroup: skillsphere-env
 
   # 3. Certification Service
   - type: web
@@ -40,16 +24,7 @@ services:
     rootDir: services/certification-service
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: SKILL_SERVICE_URL
-        value: "https://skillsphere-skill-service.onrender.com/api/v1"
+      - fromGroup: skillsphere-env
 
   # 4. Career Service
   - type: web
@@ -58,20 +33,7 @@ services:
     rootDir: services/career-service
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: SKILL_SERVICE_URL
-        value: "https://skillsphere-skill-service.onrender.com/api/v1"
-      - key: LEARNING_SERVICE_URL
-        value: "https://skillsphere-learning-service.onrender.com/api/v1"
-      - key: CERTIFICATION_SERVICE_URL
-        value: "https://skillsphere-cert-service.onrender.com/api/v1"
+      - fromGroup: skillsphere-env
 
   # 5. Assistant Service
   - type: web
@@ -80,15 +42,4 @@ services:
     rootDir: services/assistant-service
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: GROQ_API_KEY
-        sync: false
-      - key: SKILL_SERVICE_URL
-        value: "https://skillsphere-skill-service.onrender.com/api/v1"
+      - fromGroup: skillsphere-env
